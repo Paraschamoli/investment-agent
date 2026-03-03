@@ -32,7 +32,7 @@
     {
       "key": "OPENROUTER_API_KEY",
       "description": "OpenRouter API key for LLM calls",
-      "required": false
+      "required": true
     },
     {
       "key": "MEM0_API_KEY",
