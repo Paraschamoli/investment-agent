@@ -61,24 +61,20 @@ cp .env.example .env
 
 ### Configuration
 
-Edit `.env` and add your API keys:
+Edit `.env` and add your API key:
 
 | Key | Get It From | Required |
 |-----|-------------|----------|
-| `OPENAI_API_KEY` | [OpenAI Platform](https://platform.openai.com/api-keys) | ✅ Yes (or OpenRouter) |
-| `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/keys) | ✅ Yes (or OpenAI) |
+| `OPENROUTER_API_KEY` | [OpenRouter](https://openrouter.ai/keys) | ✅ Yes |
 | `MEM0_API_KEY` | [Mem0 Dashboard](https://app.mem0.ai/dashboard/api-keys) | Optional |
 
 ### Run the Agent
 
 ```bash
-# Start with Bindu server (default)
+# Start the investment agent
 uv run python -m investment_agent
 
-# Start with AgentOS UI
-uv run python -m investment_agent --use-agentos
-
-# Agent will be available at http://localhost:3773 (Bindu) or AgentOS UI
+# Agent will be available at http://localhost:3773
 ```
 
 ### Github Setup

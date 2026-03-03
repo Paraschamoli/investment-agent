@@ -7,12 +7,10 @@ import os
 import sys
 import traceback
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from agno.agent import Agent
-from agno.models.openai import OpenAIChat
 from agno.models.openrouter import OpenRouter
-from agno.os import AgentOS
 from agno.tools.yfinance import YFinanceTools
 from bindu.penguin.bindufy import bindufy
 from dotenv import load_dotenv
@@ -26,44 +24,25 @@ _initialized = False
 _init_lock = asyncio.Lock()
 
 
-def load_config() -> dict:
-    """Load agent configuration from project root."""
-    # Try multiple possible locations for agent_config.json
-    possible_paths = [
-        Path(__file__).parent.parent / "agent_config.json",  # Project root
-        Path(__file__).parent / "agent_config.json",  # Same directory as main.py
-        Path.cwd() / "agent_config.json",  # Current working directory
-    ]
+def load_config() -> dict[str, Any]:
+    """Load agent config from agent_config.json or return defaults."""
+    config_path = Path(__file__).parent / "agent_config.json"
 
-    for config_path in possible_paths:
-        if config_path.exists():
-            try:
-                with open(config_path) as f:
-                    return json.load(f)
-            except (PermissionError, json.JSONDecodeError) as e:
-                print(f"⚠️  Error reading {config_path}: {type(e).__name__}")
-                continue
-            except Exception as e:
-                print(f"⚠️  Unexpected error reading {config_path}: {type(e).__name__}")
-                continue
+    if config_path.exists():
+        try:
+            with open(config_path) as f:
+                return cast(dict[str, Any], json.load(f))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"⚠️ Failed to load config from {config_path}: {exc}")
 
-    # If no config found or readable, create a minimal default
-    print("⚠️  No agent_config.json found, using default configuration")
     return {
         "name": "investment-agent",
-        "description": "AI investment agent for stock analysis and investment research",
-        "version": "1.0.0",
+        "description": "AI investment agent that researches stock prices, analyst recommendations, and stock fundamentals using YFinance data.",
         "deployment": {
             "url": "http://127.0.0.1:3773",
             "expose": True,
             "protocol_version": "1.0.0",
-            "proxy_urls": ["127.0.0.1"],
-            "cors_origins": ["*"],
         },
-        "environment_variables": [
-            {"key": "OPENAI_API_KEY", "description": "OpenAI API key for LLM calls", "required": False},
-            {"key": "OPENROUTER_API_KEY", "description": "OpenRouter API key for LLM calls", "required": False},
-        ],
     }
 
 
@@ -72,15 +51,11 @@ async def initialize_agent() -> None:
     global agent
 
     # Get API keys from environment
-    openai_api_key = os.getenv("OPENAI_API_KEY")
     openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
     model_name = os.getenv("MODEL_NAME", "openai/gpt-4o")
 
-    # Model selection logic (supports both OpenAI and OpenRouter)
-    if openai_api_key:
-        model = OpenAIChat(id="gpt-5.2-2025-12-11", api_key=openai_api_key)
-        print("✅ Using OpenAI GPT-5.2-2025-12-11")
-    elif openrouter_api_key:
+    # Model selection (OpenRouter only)
+    if openrouter_api_key:
         model = OpenRouter(
             id=model_name,
             api_key=openrouter_api_key,
@@ -90,11 +65,8 @@ async def initialize_agent() -> None:
         print(f"✅ Using OpenRouter model: {model_name}")
     else:
         # Define error message separately to avoid TRY003
-        error_msg = (
-            "No API key provided. Set OPENAI_API_KEY or OPENROUTER_API_KEY environment variable.\n"
-            "For OpenRouter: https://openrouter.ai/keys\n"
-            "For OpenAI: https://platform.openai.com/api-keys"
-        )
+        error_msg = "No API key provided. Please set OPENROUTER_API_KEY environment variable."
+        print(f"❌ {error_msg}")
         raise ValueError(error_msg)
 
     # Initialize tools
@@ -154,12 +126,6 @@ def main():
     """Run the main entry point for the Investment Agent."""
     parser = argparse.ArgumentParser(description="Bindu Investment Agent")
     parser.add_argument(
-        "--openai-api-key",
-        type=str,
-        default=os.getenv("OPENAI_API_KEY"),
-        help="OpenAI API key (env: OPENAI_API_KEY)",
-    )
-    parser.add_argument(
         "--openrouter-api-key",
         type=str,
         default=os.getenv("OPENROUTER_API_KEY"),
@@ -176,16 +142,9 @@ def main():
         type=str,
         help="Path to agent_config.json (optional)",
     )
-    parser.add_argument(
-        "--use-agentos",
-        action="store_true",
-        help="Use AgentOS UI instead of Bindu server",
-    )
     args = parser.parse_args()
 
     # Set environment variables if provided via CLI
-    if args.openai_api_key:
-        os.environ["OPENAI_API_KEY"] = args.openai_api_key
     if args.openrouter_api_key:
         os.environ["OPENROUTER_API_KEY"] = args.openrouter_api_key
     if args.model:
@@ -198,27 +157,10 @@ def main():
     config = load_config()
 
     try:
-        if args.use_agentos:
-            # Use AgentOS UI
-            print("🚀 Starting Investment Agent with AgentOS UI...")
-
-            # Initialize agent synchronously for AgentOS
-            asyncio.run(initialize_agent())
-
-            # Create AgentOS instance
-            if agent is not None:
-                agent_os = AgentOS(agents=[agent])
-
-                # Serve with AgentOS
-                agent_os.serve(app="investment_agent:app", reload=True)
-            else:
-                print("❌ Agent not initialized for AgentOS")
-                sys.exit(1)
-        else:
-            # Use Bindu server
-            print("🚀 Starting Bindu Investment Agent server...")
-            print(f"🌐 Server will run on: {config.get('deployment', {}).get('url', 'http://127.0.0.1:3773')}")
-            bindufy(config, handler)
+        # Use Bindu server
+        print("🚀 Starting Bindu Investment Agent server...")
+        print(f"🌐 Server will run on: {config.get('deployment', {}).get('url', 'http://127.0.0.1:3773')}")
+        bindufy(config, handler)
     except KeyboardInterrupt:
         print("\n🛑 Investment Agent stopped")
     except Exception as e:
