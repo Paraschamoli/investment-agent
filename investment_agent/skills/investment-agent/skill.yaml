@@ -5,269 +5,207 @@ author: paras@getbindu.com
 
 # Description
 description: |
-  AI investment analyst that researches stock prices, analyst recommendations, and stock fundamentals.
-  Provides comprehensive financial analysis, technical indicators, and actionable investment insights using YFinance data.
+  AI investment agent that researches stock prices, analyst recommendations, and stock fundamentals using YFinance data.
+  Uses OpenRouter LLM (default: openai/gpt-4o) with YFinanceTools for market data retrieval.
 
 # Tags and Modes
 tags:
   - investment
   - stock-analysis
-  - financial-research
-  - portfolio-management
-  - market-analysis
-  - trading
-  - fundamentals
-  - technical-analysis
+  - yfinance
+  - financial-data
 
 input_modes:
   - text/plain
   - application/json
 
 output_modes:
-  - text/plain
-  - application/json
   - text/markdown
 
 # Example Queries
 examples:
   - "Analyze Apple (AAPL) stock and provide investment recommendation"
-  - "Compare Microsoft vs Google stock performance over the last year"
+  - "Compare Microsoft vs Google stock performance"
   - "What are the key fundamentals for Tesla stock?"
-  - "Provide technical analysis for Amazon stock"
-  - "Research dividend-paying stocks in the S&P 500"
 
 # Detailed Capabilities
 capabilities_detail:
   primary_capability:
     supported: true
-    description: "Comprehensive stock analysis and investment research"
+    description: "Stock analysis using YFinance data"
     features:
-      - "Real-time stock price data and historical performance"
-      - "Fundamental analysis including P/E, EPS, market cap, dividend yield"
-      - "Technical analysis with indicators and chart patterns"
-      - "Analyst recommendations and price targets"
-      - "Comparative analysis between multiple stocks"
-      - "Risk assessment and portfolio insights"
-    limitations: "Dependent on YFinance data availability; market data may have delays"
+      - "Stock price data retrieval via YFinanceTools"
+      - "Analyst recommendations via YFinanceTools"
+      - "Stock fundamentals via YFinanceTools"
+      - "Markdown-formatted responses with tables"
+      - "Multi-stock comparison analysis"
+    limitations: "Limited to YFinanceTools capabilities; depends on YFinance API availability; requires OpenRouter API key"
 
   secondary_capability:
-    supported: true
-    description: "Investment strategy guidance and market insights"
-    features:
-      - "Actionable investment recommendations"
-      - "Market trend analysis and sector performance"
-      - "Risk management strategies"
-      - "Portfolio diversification suggestions"
-      - "Entry and exit point recommendations"
+    supported: false
+    description: "Not supported by code"
+    features: []
 
 # Requirements
 requirements:
   packages:
     - agno>=2.2.0
-    - bindu>=2026.9.4
+    - bindu
     - yfinance>=0.2.18
-    - openai>=2.11.0
     - python-dotenv>=1.0.1
   system:
-    - "Internet access for stock market data"
-  min_memory_mb: 512
+    - "Internet access for YFinance API"
+  min_memory_mb: 256
   external_services:
     - YFinance API
-    - OpenAI API or OpenRouter API
+    - OpenRouter API
 
 # Performance Metrics
 performance:
-  avg_processing_time_ms: 2000
-  avg_time_per_stock_ms: 300
-  max_concurrent_requests: 5
-  memory_per_request_mb: 512
-  timeout_seconds: 90
-  max_stocks_per_query: 10
-  scalability: horizontal
+  avg_processing_time_ms: null
+  avg_time_per_stock_ms: null
+  max_concurrent_requests: null
+  memory_per_request_mb: null
+  timeout_seconds: null
+  max_stocks_per_query: null
+  scalability: null
 
 # Tool Restrictions
 allowed_tools:
   - YFinanceTools
-  - Read
-  - Search
-  - Analyze
-  - Generate
 
 # Rich Documentation
 documentation:
   overview: |
-    Provides AI-powered investment analysis and stock research capabilities.
-    Combines fundamental analysis, technical indicators, and market data to deliver actionable investment insights.
-    Excels at stock comparison, portfolio analysis, and investment recommendation generation.
+    Investment agent using YFinanceTools for stock data retrieval.
+    Powered by OpenRouter LLM (configurable model, default: openai/gpt-4o).
+    Returns markdown-formatted analysis with tables.
 
   use_cases:
     when_to_use:
-      - "Stock analysis and investment research"
-      - "Portfolio performance evaluation"
-      - "Market trend analysis"
-      - "Risk assessment and management"
-      - "Comparative stock analysis"
-      - "Investment recommendation generation"
+      - "Stock price and fundamental data queries"
+      - "Analyst recommendation lookups"
+      - "Stock comparison requests"
+      - "Investment analysis questions answerable via YFinance data"
 
     when_not_to_use:
-      - "Real-time trading advice"
-      - "Financial planning advice"
-      - "Tax or legal advice"
-      - "Guaranteed investment returns"
-      - "Cryptocurrency analysis (unless specifically supported)"
-      - "Options or derivatives analysis"
+      - "Real-time trading execution"
+      - "Data sources other than YFinance"
+      - "Cryptocurrency analysis (unless YFinance supports it)"
+      - "Options or derivatives (unless YFinance supports it)"
+      - "Portfolio tracking or management (not implemented)"
+      - "Technical indicators beyond YFinance data"
 
   input_structure: |
-    Accepts investment analysis queries in JSON or text format:
+    Accepts natural language text or JSON messages:
 
-    {
-      "query": "Stock symbol or investment question",
-      "analysis_type": "fundamental|technical|comparative",
-      "timeframe": "1d|1w|1m|3m|6m|1y|2y|5y|10y",
-      "stocks": ["AAPL", "MSFT", "GOOGL"],
-      "metrics": ["price", "volume", "pe_ratio", "dividend_yield"],
-      "risk_tolerance": "low|medium|high"
-    }
+    Text: "Analyze AAPL stock"
 
-    Constraints:
-    - Max stocks per query: 10
-    - Timeout: 90 seconds
-    - Language: English primary
+    JSON (message format):
+    [{"role": "user", "content": "Compare AAPL and MSFT"}]
+
+    No specific schema enforced; agent interprets natural language queries.
 
   output_format: |
-    Returns structured investment analysis reports:
+    Markdown-formatted text with tables where applicable.
 
-    Stock Analysis Report:
-    - STOCK_OVERVIEW: Basic company information and current status
-    - PRICE_ANALYSIS: Current price, changes, volume, trends
-    - FUNDAMENTAL_ANALYSIS: P/E ratio, EPS, market cap, financial health
-    - TECHNICAL_ANALYSIS: Indicators, support/resistance, patterns
-    - ANALYST_RECOMMENDATIONS: Consensus ratings, price targets
-    - RISK_ASSESSMENT: Risk factors and volatility metrics
-    - INVESTMENT_RECOMMENDATION: Buy/sell/hold with rationale
-    - ACTIONABLE_INSIGHTS: Specific investment steps and considerations
-    - MARKET_CONTEXT: Sector performance and market conditions
+    Example structure (agent-generated, not hardcoded):
+    - Stock overview
+    - Price analysis
+    - Fundamental metrics (P/E, market cap, etc.)
+    - Analyst recommendations
+    - Investment insights
 
-    Comparative Analysis:
-    - COMPARISON_TABLE: Side-by-side metrics for multiple stocks
-    - RELATIVE_PERFORMANCE: Performance against sector/market
-    - RANKING: Ranked recommendations based on analysis
-    - PORTFOLIO_IMPLICATIONS: How each fits in diversified portfolio
+    Actual format depends on LLM response and agent instructions.
 
   error_handling:
-    - "Invalid stock symbol: Returns list of similar valid symbols"
-    - "Market data unavailable: Provides cached data or suggests alternatives"
-    - "Complex query timeout: Returns partial analysis with completion status"
-    - "Insufficient data: Explains limitations and suggests alternatives"
-    - "Market closed: Provides last available data with disclaimer"
+    - "Missing OPENROUTER_API_KEY: Raises ValueError at initialization"
+    - "Agent not initialized: Raises RuntimeError"
+    - "YFinance API errors: Propagated from YFinanceTools"
+    - "Invalid stock symbols: Handled by YFinanceTools/LLM"
 
   examples:
-    - title: "Apple Stock Analysis"
+    - title: "Single Stock Analysis"
       input:
-        query: "Analyze AAPL stock for long-term investment"
-        analysis_type: "comprehensive"
-        timeframe: "1y"
+        query: "Analyze NVDA stock comprehensively"
       output:
-        stock_overview: {...}
-        recommendation: "BUY"
-        confidence_score: 0.85
-        key_metrics: {...}
+        format: "Markdown with sections for price, fundamentals, recommendations, outlook"
 
-    - title: "Tech Stock Comparison"
+    - title: "Stock Comparison"
       input:
-        query: "Compare AAPL vs MSFT vs GOOGL"
-        analysis_type: "comparative"
-        timeframe: "6m"
+        query: "Compare AAPL, MSFT, and AMZN"
       output:
-        comparison_table: {...}
-        ranking: ["AAPL", "MSFT", "GOOGL"]
-        portfolio_allocation: {...}
+        format: "Markdown with comparison tables and strategic commentary"
 
   best_practices:
     for_developers:
-      - "Specify analysis type for focused results"
-      - "Use appropriate timeframes for investment horizons"
-      - "Limit number of stocks for comparative analysis"
-      - "Cache frequently requested stock data"
-      - "Implement rate limiting for API calls"
-      - "Handle market hours and data availability"
+      - "Set OPENROUTER_API_KEY environment variable"
+      - "Optionally set MODEL_NAME (default: openai/gpt-4o)"
+      - "Agent initializes lazily on first request"
+      - "Uses async handler pattern"
 
     for_orchestrators:
-      - "Route investment queries here"
-      - "Chain with portfolio management agents"
-      - "Adjust timeout based on complexity"
-      - "Use confidence scores for decision making"
-      - "Fallback to cached data during outages"
-      - "Monitor data freshness and quality"
+      - "Route YFinance-based stock queries here"
+      - "Expect markdown output only"
+      - "Agent uses debug_mode=True (verbose logging)"
+      - "No built-in caching beyond model-level cache_response=True"
 
   installation: |
     Required packages:
-    pip install agno bindu yfinance openai python-dotenv
+    pip install agno bindu yfinance python-dotenv
 
     Environment variables:
-    OPENAI_API_KEY
-    OPENROUTER_API_KEY  # Alternative to OpenAI
+    OPENROUTER_API_KEY (required)
+    MODEL_NAME (optional, default: openai/gpt-4o)
 
   versioning:
     - version: "1.0.0"
-      date: "2026-01-11"
-      changes: "Initial release with YFinance integration and investment analysis"
-    - version: "1.1.0"
-      status: "planned"
-      changes: "Enhanced portfolio optimization and risk modeling"
-    - version: "1.2.0"
-      status: "planned"
-      changes: "Options analysis and advanced technical indicators"
+      date: "2026-03-03"
+      changes: "Initial implementation with YFinanceTools and OpenRouter"
 
 # Assessment fields for skill negotiation
 assessment:
   keywords:
     - investment
     - stock
-    - analysis
-    - portfolio
-    - trading
-    - finance
-    - market
-    - fundamental
-    - technical
+    - yfinance
+    - analyst
     - recommendation
+    - fundamental
+    - price
+    - market cap
+    - P/E ratio
+    - ticker
     - AAPL
-    - NYSE
-    - NASDAQ
+    - MSFT
+    - NVDA
 
   specializations:
-    - domain: technology_stocks
+    - domain: yfinance_data
+      confidence_boost: 0.4
+    - domain: stock_fundamentals
       confidence_boost: 0.3
-    - domain: financial_analysis
+    - domain: analyst_recommendations
       confidence_boost: 0.3
-    - domain: portfolio_management
-      confidence_boost: 0.2
-    - domain: risk_assessment
-      confidence_boost: 0.2
 
   anti_patterns:
-    - "financial advice"
-    - "guaranteed returns"
+    - "real-time trading"
+    - "portfolio management"
     - "tax advice"
     - "legal advice"
-    - "real-time trading"
-    - "cryptocurrency"
-    - "options trading"
+    - "guaranteed returns"
+    - "non-yfinance data sources"
 
   complexity_indicators:
     simple:
       - "stock price"
-      - "basic info"
       - "current price"
-      - "company overview"
+      - "ticker info"
     medium:
       - "analyze stock"
-      - "compare stocks"
-      - "investment recommendation"
-      - "fundamental analysis"
+      - "fundamentals"
+      - "analyst recommendations"
     complex:
-      - "portfolio optimization"
-      - "risk assessment"
+      - "compare multiple stocks"
       - "comprehensive analysis"
-      - "market trends"
+      - "investment outlook"
